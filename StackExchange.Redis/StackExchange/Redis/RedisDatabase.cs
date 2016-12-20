@@ -123,8 +123,10 @@ namespace StackExchange.Redis
                 redisValues.Add("WITHDIST");
             if (geoRadius.HasFlag(GeoRadiusOptions.WithGeoHash))
                 redisValues.Add("WITHHASH");
-            if(geoRadius.MaxReturnCount >0)
+            if(geoRadius.MaxReturnCount >0) { 
+                redisValues.Add("COUNT");
                 redisValues.Add(geoRadius.MaxReturnCount);
+            }
             var msg = Message.Create(Database, flags, RedisCommand.GEORADIUS, key, redisValues.ToArray());
             var items = ExecuteSync(msg, ResultProcessor.RedisGeoRadius);
 
