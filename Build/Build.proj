@@ -2,6 +2,7 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <BuildConfiguration>Release</BuildConfiguration>
+    <Version>1.2.0.0</Version>
     <OutputDirectory>$(MSBuildProjectDirectory)\Output</OutputDirectory>
     <NuGetTool>$(MSBuildProjectDirectory)\nuget.exe</NuGetTool>
     <EnableNuGetPackageRestore>true</EnableNuGetPackageRestore>
@@ -10,12 +11,7 @@
     Entry point Targets
   -->
   <!-- Build all projects, and create deployment artifacts -->
-  <Target Name="Build" DependsOnTargets="Clean;BuildWcfService;PrepareWcfServiceConfigFiles;PrepareScriptsFiles"/>
-  <!-- Releases a new version -->
-  <Target Name="ReleasePublishNuGetPackages" DependsOnTargets="Build;PublishNuGetPackages;"/>
-  <Target Name="Test" >
-    <Message Text="MSBuildExtensionsPath = $(MSBuildExtensionsPath)" />
-  </Target>
+  <Target Name="Build" DependsOnTargets="Clean;BuildSolution"/>
   <!--
     Common Targets
   -->
@@ -34,7 +30,7 @@
     <Message Text="BuildSolution" Importance="high"/>
     <Message Text="++++++++++++++++++++++++++++++++" Importance="high"/>
     <ItemGroup>
-      <ProjectToBuild Include="$(MSBuildProjectDirectory)\..\Tic.sln">
+      <ProjectToBuild Include="$(MSBuildProjectDirectory)\..\StackExchange.Redis_Net40\StackExchange.Redis_Net40.csproj">
         <Properties>Configuration=$(BuildConfiguration);WarningLevel=0;</Properties>
       </ProjectToBuild>
     </ItemGroup>
@@ -51,52 +47,20 @@
   -->
   <Target Name="PackNuGetPackages" DependsOnTargets="Build" >
     <ItemGroup>
-      <NuGetProjects Include="$(MSBuildProjectDirectory)\..\ContractEntities\ContractEntities.csproj"/>
-      <NuGetProjects Include="$(MSBuildProjectDirectory)\..\ClientLib\ClientLib.csproj"/>
+      <NuGetProjects Include="$(MSBuildProjectDirectory)\..\StackExchange.Redis_Net40\StackExchange.Redis_Net40.csproj"/>
     </ItemGroup>
-    <Exec Command="$(NuGetTool) pack &quot;%(NuGetProjects.Identity)&quot; -Prop Configuration=$(BuildConfiguration) -OutputDirectory &quot;$(OutputDirectory)&quot; -IncludeReferencedProjects " />
+    <Exec Command="$(NuGetTool) pack &quot;%(NuGetProjects.Identity)&quot; -Version $(Version) -Prop Configuration=$(BuildConfiguration) -OutputDirectory &quot;$(OutputDirectory)&quot; -IncludeReferencedProjects " />
   </Target>
   <!--
     Publish NuGetPackages
   -->
+<!--
   <Target Name="PublishNuGetPackages" DependsOnTargets="Build;PackNuGetPackages">
     <ItemGroup>
       <NuGetPackages Include="$(OutputDirectory)\*.nupkg"/>
     </ItemGroup>
     <Exec Command="$(NuGetTool) push &quot;%(NuGetPackages.Identity)&quot; -Source StibMivb -Verbosity quiet -NonInteractive"/>
   </Target>
-  <!-- 
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-  #Region Transformation of config files
-          Use this for config transformation TESTS
-          > msbuild build.proj -t:TransformConfigFiles
-
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  -->
-  <UsingTask TaskName="TransformXml" AssemblyFile="$(MSBuildProjectDirectory)\Tools\Microsoft.Web.Publishing.Tasks.dll"/>
-  <!--
-    Set the Itemgroup for the TransformConfig target
-    (prepares the task batching) 
-    One TransformConfigFile item by config file to transform
-  -->
-  <Target Name="TransformConfigEnvirItemGroup"  >
-    <ItemGroup>
-      <TransformConfigEnvir Include="TST;ACC;PRD"/>
-    </ItemGroup>
-  </Target>
-  <!--
-    Transform the config files
-    Batched target by the the TransformConfigFile ItemGroup
-  -->
-  <Target Name="TransformConfigFiles" DependsOnTargets="Clean;TransformConfigEnvirItemGroup" Outputs="%(TransformConfigEnvir.Identity)" >
-    <Message Text="+++++++++++++++++++++++" Importance="high"/>
-    <Message Text="TransformConfigEnvir     %(TransformConfigEnvir.Identity)" Importance="high"/>
-    <Message Text="+++++++++++++++++++++++" Importance="high"/>
-    <TransformXml Source="$(MSBuildProjectDirectory)\..\WcfService\web.config"
-                  Transform="$(MSBuildProjectDirectory)\..\Config\WcfService\%(TransformConfigEnvir.Identity)\web.config"
-                  Destination="$(OutputDirectory)\web.%(TransformConfigEnvir.Identity).config"
-                  StackTrace="true" />
-  </Target>
+-->
 
 </Project>
